@@ -1,0 +1,22 @@
+name: Test Azure OIDC Login
+on: workflow_dispatch
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  login-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: 95c2a0ba-1552-4a98-b297-745125d3b220
+          tenant-id: 6980af2f-acfc-4513-ac50-552bcfdb01a0
+          subscription-id: 7a3c6854-0fe1-42eb-b5b9-800af1e53d70
+
+      - name: Verify login
+        run: az account show -o table
