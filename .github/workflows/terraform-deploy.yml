@@ -4,15 +4,12 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write        # kreves for OIDC
+  id-token: write
   contents: read
 
 jobs:
   deploy:
     runs-on: windows-latest
-
-    env:
-      TF_IN_AUTOMATION: "true"
 
     steps:
       - name: Checkout repo
@@ -21,34 +18,22 @@ jobs:
       - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: 6ca44339-750f-4795-9683-d65a412ed32a
+          tenant-id: 6980af2f-acfc-4513-ac50-552bcfdb01a0
+          subscription-id: 7a3c6854-0fe1-42eb-b5b9-800af1e53d70
 
-      - name: Verify login
+      - name: Show subscriptions (debug)
         shell: pwsh
-        run: az account show -o table
+        run: az account list -o table
+
+      - name: Select subscription
+        shell: pwsh
+        run: az account set --subscription 7a3c6854-0fe1-42eb-b5b9-800af1e53d70
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_wrapper: false
-
-      - name: Terraform version
-        shell: pwsh
-        run: terraform version
 
       - name: Terraform Init
         shell: pwsh
         working-directory: ./iac-oving3/bootstrap
-        run: terraform init -input=false
-
-      - name: Terraform Validate
-        shell: pwsh
-        working-directory: ./iac-oving3/bootstrap
-        run: terraform validate
-
-      - name: Terraform Plan
-        shell: pwsh
-        working-directory: ./iac-oving3/bootstrap
-        run: terraform plan -input=false -no-color
+        run: terraform init
