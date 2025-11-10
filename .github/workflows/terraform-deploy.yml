@@ -4,12 +4,15 @@ on:
   workflow_dispatch:
 
 permissions:
-  id-token: write
+  id-token: write        # kreves for OIDC
   contents: read
 
 jobs:
   deploy:
     runs-on: windows-latest
+
+    env:
+      TF_IN_AUTOMATION: "true"
 
     steps:
       - name: Checkout repo
@@ -28,8 +31,24 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+
+      - name: Terraform version
+        shell: pwsh
+        run: terraform version
 
       - name: Terraform Init
         shell: pwsh
         working-directory: ./iac-oving3/bootstrap
-        run: terraform init
+        run: terraform init -input=false
+
+      - name: Terraform Validate
+        shell: pwsh
+        working-directory: ./iac-oving3/bootstrap
+        run: terraform validate
+
+      - name: Terraform Plan
+        shell: pwsh
+        working-directory: ./iac-oving3/bootstrap
+        run: terraform plan -input=false -no-color
