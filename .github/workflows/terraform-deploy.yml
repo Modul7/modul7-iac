@@ -1,0 +1,40 @@
+name: Terraform Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v4
+
+    - name: Azure Login (OIDC)
+      uses: azure/login@v2
+      with:
+        client-id: 95c2a0ba-1552-4a98-b297-745125d3b220
+        tenant-id: 6980af2f-acfc-4513-ac50-552bcfdb01a0
+        subscription-id: 7a3c6854-0fe1-42eb-b5b9-880af1e53d70
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init
+      run: terraform init
+      working-directory: ./iac-oving3/bootstrap
+
+    - name: Terraform Plan
+      run: terraform plan
+      working-directory: ./iac-oving3/bootstrap
+
+    - name: Terraform Apply
+      run: terraform apply -auto-approve
+      working-directory: ./iac-oving3/bootstrap
