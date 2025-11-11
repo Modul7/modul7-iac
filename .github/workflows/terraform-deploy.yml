@@ -25,35 +25,17 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      - name: Finn Terraform-katalog (m/ main.tf)
-        shell: pwsh
-        run: |
-          $repo = "${{ github.workspace }}"
-          $hits = Get-ChildItem -Path $repo -Recurse -Filter 'main.tf' -ErrorAction SilentlyContinue |
-                  Select-Object -ExpandProperty DirectoryName -Unique
-          if (!$hits) { throw "Fant ingen main.tf i repoet." }
-          if ($hits.Count -gt 1) {
-            Write-Host "Flere Terraform-kataloger funnet:"
-            $hits | ForEach-Object { Write-Host " - $_" }
-            $tfDir = $hits[0]
-            Write-Host "Bruker første treff: $tfDir"
-          } else {
-            $tfDir = $hits[0]
-          }
-          "TF_DIR=$tfDir" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          Write-Host "TF_DIR=$tfDir"
-
       - name: Terraform Init
         shell: pwsh
-        working-directory: ${{ env.TF_DIR }}
-        run: terraform init -input=false
+        working-directory: ./terraform
+        run: terraform init -input=false -backend-config="backends/dev.tfvars"
 
       - name: Terraform Validate
         shell: pwsh
-        working-directory: ${{ env.TF_DIR }}
+        working-directory: ./terraform
         run: terraform validate
 
       - name: Terraform Plan
         shell: pwsh
-        working-directory: ${{ env.TF_DIR }}
+        working-directory: ./terraform
         run: terraform plan -no-color
